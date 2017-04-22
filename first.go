@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-        
+        _ "github.com/boltdb/bolt"
 	"github.com/hashicorp/raft-boltdb"
+	"github.com/hashicorp/raft"
 )
 
 type Hack struct {
@@ -13,6 +14,7 @@ type Hack struct {
 func main() {
 	// Open the my.db data file in your current directory.
 	// It will be created if it doesn't exist.
+	/*
 	db, err := bolt.Open("my.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -34,10 +36,20 @@ func main() {
 	})
 	log.Print("worked")
 	defer db.Close()
-
+*/
 	// Create the backend raft store for logs and stable storage.
-	store, err := raftboltdb.NewBoltStore(filepath.Join(path, "raft.db"))
+	store, err := raftboltdb.NewBoltStore("raft.db")
 	if err != nil {
-	    return err
+	    log.Fatal(err)
 	}
+	if store != nil {
+	   log.Print("opened the bolt store");
+	}
+	//lastIndex, err := store.LastIndex
+	
+	raft, err := raft.NewRaft(nil, nil, store, store, nil, nil, nil)
+	if err != nil {
+	    log.Fatal(err)
+	}
+	if raft != nil { log.Print("got a raft")}
 }
