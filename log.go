@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/hashicorp/raft"
+	"github.com/hashicorp/raft"
 )
 
 // LogType describes various types of log entries.
