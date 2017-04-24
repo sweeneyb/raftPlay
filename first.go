@@ -27,7 +27,9 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	log.Print(flag.Args()[0])
 
+	// This doesn't error if the file doesn't exist.  Which isn't ideal for this usage
 	store, err := raftboltdb.NewBoltStore(*dbPtr)
 	if err != nil {
 		log.Fatal(err)
@@ -36,21 +38,29 @@ func main() {
 		log.Print("opened the bolt store")
 	}
 	lastIndex, err := store.LastIndex()
-	log.Printf("%d", lastIndex)
+	log.Printf("last transaction log index: %d", lastIndex)
 	raftLog := &raft.Log{}
 	store.GetLog(lastIndex, raftLog)
-	//log.Printf("%s", raftLog)
-	//log.Printf("%s", raftLog.Data)
 	var i, term uint64
-	for i = 0; i <= lastIndex; i++ {
-		store.GetLog(i, raftLog)
+	i, err = store.FirstIndex()
+	log.Printf("first index: %s", i)
+	for ; i <= lastIndex; i++ {
+		err = store.GetLog(i, raftLog)
+		if err != nil {
+			log.Print(err)
+			break
+		}
 		log.Printf("%d", i)
 		log.Printf("%s", raftLog)
 	}
 	term = raftLog.Term
+	if i == 0 {
+		log.Fatal("no transaction logs. Is this a real raft store?")
+		os.Exit(2)
+	}
 	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
-	removeLog.Data = encodePeers([]string{"192.168.0.1:8300"})
-	log.Printf("%s", removeLog)
+	removeLog.Data = encodePeers([]string{flag.Args()[0]})
+	log.Printf("to be appended: %s", removeLog)
 	err = store.StoreLog(removeLog)
 	if err != nil {
 		log.Fatal(err)
