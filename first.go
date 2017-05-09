@@ -41,7 +41,8 @@ func main() {
 	log.Printf("last transaction log index: %d", lastIndex)
 	raftLog := &raft.Log{}
 	store.GetLog(lastIndex, raftLog)
-	var i, term uint64
+	var i uint64
+	var term uint64
 	i, err = store.FirstIndex()
 	log.Printf("first index: %s", i)
 	for ; i <= lastIndex; i++ {
@@ -50,23 +51,29 @@ func main() {
 			log.Print(err)
 			break
 		}
-		log.Printf("%d", i)
-		log.Printf("%s", raftLog)
+		log.Printf("index: %d", i)
+		fmt.Printf("%s\n", raftLog)
+		if(raftLog.Type == 2) {
+		    fmt.Printf("%s\n", decodePeers(raftLog.Data))
+		}
 	}
 	term = raftLog.Term
 	if i == 0 {
 		log.Fatal("no transaction logs. Is this a real raft store?")
 		os.Exit(2)
 	}
-	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
+	
+	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
 	removeLog.Data = encodePeers([]string{flag.Args()[0]})
 	log.Printf("to be appended: %s", removeLog)
-	err = store.StoreLog(removeLog)
+	/*err = store.StoreLog(removeLog)
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		log.Print("message appended")
 	}
+	*/
+	
 
 }
 
@@ -94,4 +101,29 @@ func encodeMsgPack(in interface{}) (*bytes.Buffer, error) {
 	enc := codec.NewEncoder(buf, &hd)
 	err := enc.Encode(in)
 	return buf, err
+}
+
+//from raft's util.go
+// decodePeers is used to deserialize a list of peers.
+func decodePeers(buf []byte) []string {
+        // Decode the buffer first
+   	var encPeers [][]byte
+	if err := decodeMsgPack(buf, &encPeers); err != nil {
+	        panic(fmt.Errorf("failed to decode peers: %v", err))
+	}
+
+	// Deserialize each peer
+	var peers []string
+	        for _, enc := range encPeers {
+		    	  peers = append(peers, string(enc))
+		}
+	return peers
+}
+
+// Decode reverses the encode operation on a byte slice input.
+func decodeMsgPack(buf []byte, out interface{}) error {
+	r := bytes.NewBuffer(buf)
+	hd := codec.MsgpackHandle{}
+	dec := codec.NewDecoder(r, &hd)
+	return dec.Decode(out)
 }
