@@ -9,7 +9,7 @@ type LogCommand struct {
 }
 
 func (c *LogCommand) Run(args []string) int {
-//	c.Ui.Output("Log run")
+	//	c.Ui.Output("Log run")
 
 	logC := cli.NewCLI("log subcommand", "")
 	logC.Args = args
