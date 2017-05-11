@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/hashicorp/go-msgpack/codec"
-	//"github.com/hashicorp/raft"
-	//"github.com/hashicorp/raft-boltdb"
+	"github.com/hashicorp/raft"
+	"github.com/hashicorp/raft-boltdb"
 	"github.com/mitchellh/cli"
 	"log"
 	"os"
@@ -40,7 +40,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
 	os.Exit(exitStatus)
+}
 
+func viewLogs() {
 	/*
 	   	dbPtr := flag.String("db-file", "raft.db", "filename of the raft db to alter")
 	   	flag.Usage = func() {
@@ -54,9 +56,9 @@ func main() {
 	   		os.Exit(1)
 	   	}
 	   	log.Print(flag.Args()[0])
-
+*/	
 	   	// This doesn't error if the file doesn't exist.  Which isn't ideal for this usage
-	   	store, err := raftboltdb.NewBoltStore(*dbPtr)
+	   	store, err := raftboltdb.NewBoltStore("raft.db")
 	   	if err != nil {
 	   		log.Fatal(err)
 	   	}
@@ -68,7 +70,7 @@ func main() {
 	   	raftLog := &raft.Log{}
 	   	store.GetLog(lastIndex, raftLog)
 	   	var i uint64
-	   	var term uint64
+	   	//var term uint64
 	   	i, err = store.FirstIndex()
 	   	log.Printf("first index: %s", i)
 	   	for ; i <= lastIndex; i++ {
@@ -90,17 +92,17 @@ func main() {
 	   		    }
 	   		}
 	   	}
-	   	term = raftLog.Term
+	   	//term = raftLog.Term
 	   	if i == 0 {
 	   		log.Fatal("no transaction logs. Is this a real raft store?")
 	   		os.Exit(2)
 	   	}
 
 	   	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
-	   	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
-	   	removeLog.Data = encodePeers([]string{flag.Args()[0]})
-	   	log.Printf("to be appended: %s", removeLog)
-	*/
+	   	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
+	   	//removeLog.Data = encodePeers([]string{flag.Args()[0]})
+	   	//log.Printf("to be appended: %s", removeLog)
+	
 	/*
 		err = store.StoreLog(removeLog)
 		if err != nil {
@@ -109,12 +111,12 @@ func main() {
 			log.Print("message appended")
 		}
 	*/
-	/*
+	
 		err = store.Close()
 		if err != nil {
 		  log.Fatal(err)
 		}
-	*/
+	
 
 }
 
