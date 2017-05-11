@@ -2,25 +2,52 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/hashicorp/go-msgpack/codec"
-	"github.com/hashicorp/raft"
-	"github.com/hashicorp/raft-boltdb"
+	//"github.com/hashicorp/raft"
+	//"github.com/hashicorp/raft-boltdb"
+	"github.com/mitchellh/cli"
 	"log"
 	"os"
 )
 
 type Hack struct {
-	raftStore *raftboltdb.BoltStore
+     //	raftStore *raftboltdb.BoltStore
 }
 
+
 func main() {
+
+     ui := &cli.BasicUi {
+     	Reader: os.Stdin,
+	Writer: os.Stdout,
+	ErrorWriter: os.Stderr,
+	}
+
+	c := cli.NewCLI("raftTool", "0.0.1")
+	c.Args = os.Args[1:]
+
+	c.Commands = map[string]cli.CommandFactory {
+		   "logs": func()  (cli.Command, error) {
+		   	  return &LogCommand { Ui: ui }, nil
+		   },
+		   "conf": func()  (cli.Command, error) {
+		   	  return &ConfCommand { Ui: ui },  nil
+		   },
+	}
+
+	exitStatus, err := c.Run()
+	if err != nil {
+	   fmt.Fprintln(os.Stderr, err.Error())
+	}
+	os.Exit(exitStatus)
+
+/*
 	dbPtr := flag.String("db-file", "raft.db", "filename of the raft db to alter")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		flag.PrintDefaults()
-		fmt.Print("The first argument should be the node to remove. ie, 192.168.0.2:8300")
+		fmt.Print("The first argument should be the node to remove. ie, 192.168.0.2:8300\n")
 	}
 	flag.Parse()
 	if len(flag.Args()) < 1 {
@@ -51,10 +78,17 @@ func main() {
 			log.Print(err)
 			break
 		}
-		log.Printf("index: %d", i)
+		fmt.Printf("index: %d\n", i)
 		fmt.Printf("%s\n", raftLog)
 		if(raftLog.Type == 2) {
 		    fmt.Printf("%s\n", decodePeers(raftLog.Data))
+		    if(len(decodePeers(raftLog.Data)) > 1) {
+                      fmt.Printf("would delete\n")
+		      //err = store.DeleteRange(1, i)
+		      if err != nil {
+		        log.Print(err)
+	              }
+		    }
 		}
 	}
 	term = raftLog.Term
@@ -63,17 +97,27 @@ func main() {
 		os.Exit(2)
 	}
 	
-	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
+	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
+	var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
 	removeLog.Data = encodePeers([]string{flag.Args()[0]})
 	log.Printf("to be appended: %s", removeLog)
-	/*err = store.StoreLog(removeLog)
+	*/
+	/*
+	err = store.StoreLog(removeLog)
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		log.Print("message appended")
 	}
 	*/
+	/*
+	err = store.Close()
+	if err != nil {
+	  log.Fatal(err)
+	}
+	*/
 	
+		
 
 }
 
