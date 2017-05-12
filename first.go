@@ -42,7 +42,7 @@ func main() {
 	os.Exit(exitStatus)
 }
 
-func viewLogs() {
+func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) (error)) {
 	/*
 		dbPtr := flag.String("db-file", "raft.db", "filename of the raft db to alter")
 		flag.Usage = func() {
@@ -70,7 +70,7 @@ func viewLogs() {
 	raftLog := &raft.Log{}
 	store.GetLog(lastIndex, raftLog)
 	var i uint64
-	//var term uint64
+	var term uint64
 	i, err = store.FirstIndex()
 	log.Printf("first index: %s", i)
 	for ; i <= lastIndex; i++ {
@@ -92,11 +92,13 @@ func viewLogs() {
 			}
 		}
 	}
-	//term = raftLog.Term
+	term = raftLog.Term
 	if i == 0 {
 		log.Fatal("no transaction logs. Is this a real raft store?")
 		os.Exit(2)
 	}
+
+	callback(store, &raft.Log{Index: i, Term: term})
 
 	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
 	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
