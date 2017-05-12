@@ -42,7 +42,7 @@ func main() {
 	os.Exit(exitStatus)
 }
 
-func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) (error)) {
+func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) error) {
 	/*
 		dbPtr := flag.String("db-file", "raft.db", "filename of the raft db to alter")
 		flag.Usage = func() {
