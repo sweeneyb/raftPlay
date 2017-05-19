@@ -97,22 +97,22 @@ func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) error) {
 		log.Fatal("no transaction logs. Is this a real raft store?")
 		os.Exit(2)
 	}
-
-	callback(store, &raft.Log{Index: i, Term: term})
+	appendLog := &raft.Log{Index: i, Term: term}
+	callback(store, appendLog)
 
 	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
 	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
 	//removeLog.Data = encodePeers([]string{flag.Args()[0]})
 	//log.Printf("to be appended: %s", removeLog)
 
-	/*
-		err = store.StoreLog(removeLog)
+	
+		err = store.StoreLog(appendLog)
 		if err != nil {
 			log.Fatal(err)
 		} else {
 			log.Print("message appended")
 		}
-	*/
+	
 
 	err = store.Close()
 	if err != nil {

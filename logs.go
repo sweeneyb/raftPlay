@@ -24,6 +24,9 @@ func (c *LogCommand) Run(args []string) int {
 		"add": func() (cli.Command, error) {
 			return &AddPeer{Ui: c.Ui}, nil
 		},
+		"remove": func() (cli.Command, error) {
+			return &RemovePeer{Ui: c.Ui}, nil
+		},
 	}
 	if exitStatus, err := logC.Run(); err != nil {
 		c.Ui.Error(err.Error())
@@ -62,7 +65,21 @@ func (c *AddPeer) Synopsis() string { return c.Help() }
 func (c *AddPeer) Run(args []string) int {
 	viewLogs(func(store *raftboltdb.BoltStore, raftLog *raft.Log) error {
 		raftLog.Type = raft.LogAddPeer
-		raftLog.Data = encodePeers([]string{"127.0.0.1"})
+		raftLog.Data = encodePeers(args[0:1])
+		c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
+		return nil
+	})
+	return 0
+}
+
+type RemovePeer struct{ Ui cli.Ui }
+
+func (c *RemovePeer) Help() string     { return "append an AddPeer record to the end of the log" }
+func (c *RemovePeer) Synopsis() string { return c.Help() }
+func (c *RemovePeer) Run(args []string) int {
+	viewLogs(func(store *raftboltdb.BoltStore, raftLog *raft.Log) error {
+		raftLog.Type = raft.LogRemovePeer
+		raftLog.Data = encodePeers(args[0:1])
 		c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
 		return nil
 	})
