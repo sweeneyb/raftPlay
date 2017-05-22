@@ -105,14 +105,14 @@ func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) error) {
 	//removeLog.Data = encodePeers([]string{flag.Args()[0]})
 	//log.Printf("to be appended: %s", removeLog)
 
-	
-		err = store.StoreLog(appendLog)
-		if err != nil {
-			log.Fatal(err)
-		} else {
-			log.Print("message appended")
-		}
-	
+	if nil != appendLog {
+	   err = store.StoreLog(appendLog)
+	   if err != nil {
+	      log.Fatal(err)
+	   } else {
+              log.Print("message appended")
+	   }
+	}
 
 	err = store.Close()
 	if err != nil {
