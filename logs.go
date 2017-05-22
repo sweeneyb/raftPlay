@@ -66,7 +66,13 @@ func (c *AddPeer) Run(args []string) int {
 	viewLogs(func(store *raftboltdb.BoltStore, raftLog *raft.Log) error {
 		raftLog.Type = raft.LogAddPeer
 		raftLog.Data = encodePeers(args[0:1])
-		c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
+
+		err := store.StoreLog(raftLog)
+		if err != nil {
+			c.Ui.Output(fmt.Sprintf("%s", err))
+		} else {
+			c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
+		}
 		return nil
 	})
 	return 0
@@ -80,7 +86,12 @@ func (c *RemovePeer) Run(args []string) int {
 	viewLogs(func(store *raftboltdb.BoltStore, raftLog *raft.Log) error {
 		raftLog.Type = raft.LogRemovePeer
 		raftLog.Data = encodePeers(args[0:1])
-		c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
+		err := store.StoreLog(raftLog)
+		if err != nil {
+			c.Ui.Output(fmt.Sprintf("%s", err))
+		} else {
+			c.Ui.Output(fmt.Sprintf("to be appended %s\n", raftLog))
+		}
 		return nil
 	})
 	return 0

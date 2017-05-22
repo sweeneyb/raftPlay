@@ -80,7 +80,10 @@ func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) error) {
 			break
 		}
 		fmt.Printf("index: %d\n", i)
-		fmt.Printf("%s\n", raftLog)
+		fmt.Printf("term: %d\n", raftLog.Term)
+		fmt.Printf("LogType: %d\n", raftLog.Type)
+		//fmt.Printf("foo: %d\n", uint8(raftLog.Data[0]))
+		fmt.Printf("%s\n", raftLog.Data)
 		if raftLog.Type == 2 {
 			fmt.Printf("%s\n", decodePeers(raftLog.Data))
 			if len(decodePeers(raftLog.Data)) > 1 {
@@ -99,20 +102,6 @@ func viewLogs(callback func(*raftboltdb.BoltStore, *raft.Log) error) {
 	}
 	appendLog := &raft.Log{Index: i, Term: term}
 	callback(store, appendLog)
-
-	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogAddPeer}
-	//var removeLog = &raft.Log{Index: i, Term: term, Type: raft.LogRemovePeer}
-	//removeLog.Data = encodePeers([]string{flag.Args()[0]})
-	//log.Printf("to be appended: %s", removeLog)
-
-	if nil != appendLog {
-	   err = store.StoreLog(appendLog)
-	   if err != nil {
-	      log.Fatal(err)
-	   } else {
-              log.Print("message appended")
-	   }
-	}
 
 	err = store.Close()
 	if err != nil {
